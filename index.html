@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Direct vs OTA — Euphoric Leisure</title>
+<style>
+  :root{
+    --ink:#11161c; --ink2:#3a4654; --line:#e4e8ee; --bg:#f5f6f8; --card:#ffffff;
+    --red:#c0392b; --redbg:#fbe9e7; --amber:#b9770e; --amberbg:#fdf3e0; --green:#1f8a4c; --greenbg:#e7f5ec;
+    --ota:#2563a8; --otabg:#eaf2fb; --dir:#1f8a4c; --oth:#7a6f9c;
+    --accent:#0f2d4a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"IBM Plex Sans","Helvetica Neue",Helvetica,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45;padding:0 0 80px}
+  .num{font-family:"IBM Plex Mono","SFMono-Regular",Menlo,monospace;font-variant-numeric:tabular-nums}
+  header{background:var(--accent);color:#fff;padding:34px 40px 30px}
+  header .ey{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#7fb0e0}
+  header h1{font-size:30px;font-weight:600;margin:6px 0 4px;letter-spacing:-.02em}
+  header .sub{color:#b9cce0;font-size:14px}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 40px}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:-22px auto 0;max-width:1180px;padding:0 40px;position:relative}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;box-shadow:0 6px 20px rgba(15,45,74,.06)}
+  .card .lbl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);font-weight:600}
+  .card .big{font-size:28px;font-weight:600;margin-top:6px;letter-spacing:-.02em}
+  .card .small{font-size:12.5px;color:var(--ink2);margin-top:2px}
+  .card.dir .big{color:var(--dir)} .card.ota .big{color:var(--ota)} .card.warn .big{color:var(--red)}
+  section{margin-top:42px}
+  h2{font-size:13px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);font-weight:700;border-bottom:2px solid var(--accent);padding-bottom:8px;margin-bottom:4px}
+  .note{font-size:13px;color:var(--ink2);margin:10px 0 16px;max-width:760px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  @media(max-width:900px){.two{grid-template-columns:1fr}.cards{grid-template-columns:1fr 1fr}}
+  .minihed{font-size:12px;font-weight:700;color:var(--ink);margin:0 0 8px;letter-spacing:.02em}
+  .minihed span{font-weight:400;color:var(--ink2)}
+  table{width:100%;border-collapse:collapse;font-size:13px;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  thead th{background:#f0f3f7;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);font-weight:700;cursor:pointer;user-select:none;position:sticky;top:0}
+  thead th:hover{background:#e6ebf1}
+  thead th.s-asc::after{content:" \25B2";color:var(--accent);font-size:9px}
+  thead th.s-desc::after{content:" \25BC";color:var(--accent);font-size:9px}
+  tbody tr:hover{background:#fafbfd}
+  td.prop{font-weight:500;max-width:300px;overflow:hidden;text-overflow:ellipsis}
+  .rank{color:var(--ink2);font-size:11px;padding-right:4px}
+  .pill{display:inline-block;min-width:46px;text-align:center;padding:2px 8px;border-radius:20px;font-size:12px;font-weight:700;font-family:"IBM Plex Mono",monospace}
+  .p0{background:var(--redbg);color:var(--red)} .plow{background:var(--amberbg);color:var(--amber)} .pok{background:var(--greenbg);color:var(--green)}
+  .dirn{color:var(--dir);font-weight:600} .otan{color:var(--ota)} .othn{color:var(--oth)}
+  .zero td{color:#9aa3ad}
+  .toolbar{display:flex;gap:10px;align-items:center;margin:14px 0 10px;flex-wrap:wrap}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:7px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn:hover{background:#16456f} .btn.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+  .search{flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--line);border-radius:7px;font-size:13px;font-family:inherit}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:8px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1}
+  .tbl-scroll{max-height:640px;overflow:auto;border-radius:8px;border:1px solid var(--line)}
+  .tbl-scroll table{border:none;border-radius:0}
+  .legend{font-size:12px;color:var(--ink2);display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}
+  .legend b{font-weight:600;color:var(--ink)}
+  .foot{font-size:11.5px;color:#9aa3ad;margin-top:34px;text-align:center;font-family:"IBM Plex Mono",monospace}
+</style>
+</head>
+<body>
+<header>
+  <div class="ey">Revenue Wolves &middot; Euphoric Leisure</div>
+  <h1>Direct vs OTA &mdash; The Direct Battle</h1>
+  <div class="sub">Booked 01 Mar &ndash; 22 May 2026 &middot; 1,264 confirmed reservations &middot; 108 properties</div>
+</header>
+
+<div class="cards">
+  <div class="card dir"><div class="lbl">Direct bookings</div><div class="big num">30</div><div class="small num">R358,672</div></div>
+  <div class="card ota"><div class="lbl">OTA bookings</div><div class="big num">1,122</div><div class="small num">R8,738,013</div></div>
+  <div class="card warn"><div class="lbl">Direct share</div><div class="big num">2.6%</div><div class="small">of Direct + OTA bookings</div></div>
+  <div class="card warn"><div class="lbl">Zero-direct properties</div><div class="big num">86</div><div class="small">of 108 &middot; only 22 get any direct</div></div>
+</div>
+
+<div class="wrap">
+
+<section>
+  <h2>Who is losing worst</h2>
+  <p class="note">Two lenses on the same problem &mdash; all of these properties took <b>zero</b> direct bookings in the window. Left ranks by OTA <b>volume</b> (most guests passing through, none captured). Right ranks by OTA <b>revenue</b> (most rand flowing through commissionable channels).</p>
+  <div class="two">
+    <div>
+      <div class="minihed">By OTA volume <span>&mdash; most guests, none direct</span></div>
+      <table id="volTbl"><thead><tr><th>Property</th><th>OTA #</th><th>OTA rev</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div>
+      <div class="minihed">By OTA revenue <span>&mdash; biggest commission exposure</span></div>
+      <table id="revTbl"><thead><tr><th>Property</th><th>OTA rev</th><th>OTA #</th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Full breakdown &mdash; per property, per channel</h2>
+  <div class="toolbar">
+    <input class="search" id="search" placeholder="Filter properties...">
+    <button class="btn" onclick="copyTSV()">Copy for Sheets</button>
+    <button class="btn ghost" onclick="copyZero()">Copy zero-direct only</button>
+  </div>
+  <div class="legend">
+    <span><b>DIR</b> = direct + pangolincollection</span>
+    <span><b>OTA</b> = Airbnb + Booking.com</span>
+    <span><b>OTH</b> = manual + Agent + members (not counted in Direct%)</span>
+    <span>Direct% <span class="pill p0">0</span> <span class="pill plow">low</span> <span class="pill pok">ok</span></span>
+  </div>
+  <div class="tbl-scroll">
+  <table id="mainTbl">
+    <thead><tr>
+      <th data-k="name">Property</th>
+      <th data-k="share">Direct%</th>
+      <th data-k="dc">DIR #</th><th data-k="dr">DIR rev</th>
+      <th data-k="oc">OTA #</th><th data-k="or">OTA rev</th>
+      <th data-k="ab">Airbnb</th><th data-k="bdc">BDC</th>
+      <th data-k="xc">OTH #</th>
+      <th data-k="total">Total</th>
+    </tr></thead>
+    <tbody></tbody>
+  </table>
+  </div>
+</section>
+
+<div class="foot">Generated from Boom export &middot; PRICE column &middot; status = confirmed &middot; revenue in ZAR</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DATA = [{"name": "Coratina Flatlet at 13 Olives Estate", "Airbnb": [0, 0], "Booking.com": [3, 13590], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [9, 52931], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [3, 13590], "X": [9, 52931], "share": 0.0, "total": 12}, {"name": "Tuscan Flatlet at 13 Olives Estate", "Airbnb": [2, 1442], "Booking.com": [10, 19687], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [5, 19752], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [12, 21128], "X": [5, 19752], "share": 0.0, "total": 17}, {"name": "Ocean Club A12, Zimbali Lakes", "Airbnb": [0, 0], "Booking.com": [21, 84232], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [21, 84232], "X": [0, 0], "share": 0.0, "total": 21}, {"name": "La Ballito 1202, Dolphin Coast", "Airbnb": [5, 10691], "Booking.com": [9, 43055], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [2, 1681], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [14, 53745], "X": [2, 1681], "share": 0.0, "total": 16}, {"name": "Ocean Club H23, Zimbali Lakes", "Airbnb": [18, 39103], "Booking.com": [0, 0], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 3075], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [18, 39103], "X": [1, 3075], "share": 0.0, "total": 19}, {"name": "Ocean Club G27, Zimbali Lakes", "Airbnb": [0, 0], "Booking.com": [25, 65712], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [2, 2653], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [25, 65712], "X": [2, 2653], "share": 0.0, "total": 27}, {"name": "Marina Bay 307, Umhlanga", "Airbnb": [2, 9285], "Booking.com": [12, 70230], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [14, 79515], "X": [0, 0], "share": 0.0, "total": 14}, {"name": "Sandton Splendour", "Airbnb": [13, 85705], "Booking.com": [6, 33298], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 1332], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [19, 119003], "X": [1, 1332], "share": 0.0, "total": 20}, {"name": "Mtunzi Park 18, Scottburgh", "Airbnb": [5, 25991], "Booking.com": [0, 0], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [5, 25991], "X": [0, 0], "share": 0.0, "total": 5}, {"name": "Ocean Club H25, Zimbali Lakes", "Airbnb": [5, 14716], "Booking.com": [4, 7375], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 2100], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [9, 22091], "X": [1, 2100], "share": 0.0, "total": 10}, {"name": "Suite 322, Zimbali Suites", "Airbnb": [14, 54015], "Booking.com": [2, 7130], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [2, 11161], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [16, 61145], "X": [2, 11161], "share": 0.0, "total": 18}, {"name": "Ocean Club C4, Zimbali Lakes", "Airbnb": [9, 24756], "Booking.com": [3, 16298], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 5894], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [12, 41054], "X": [1, 5894], "share": 0.0, "total": 13}, {"name": "Blesbuck Close, Cathkin Estates", "Airbnb": [7, 75184], "Booking.com": [8, 139467], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 2972], "Agent": [0, 0], "members": [1, 24057], "D": [0, 0], "O": [15, 214651], "X": [2, 27029], "share": 0.0, "total": 17}, {"name": "Via Positano 41, Paulshof, JHB", "Airbnb": [8, 17378], "Booking.com": [1, 2311], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 22458], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [9, 19688], "X": [1, 22458], "share": 0.0, "total": 10}, {"name": "Ocean Club B1, Zimbali Lakes", "Airbnb": [11, 38376], "Booking.com": [0, 0], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [11, 38376], "X": [0, 0], "share": 0.0, "total": 11}, {"name": "Suite 610, Zimbali Suites", "Airbnb": [3, 15593], "Booking.com": [10, 84313], "direct": [1, 5279], "pangolincollection": [0, 0], "manual": [1, 0], "Agent": [1, 12122], "members": [0, 0], "D": [1, 5279], "O": [13, 99905], "X": [2, 12122], "share": 7.1, "total": 16}, {"name": "Kalamata Flatlet at 13 Olives Estate", "Airbnb": [0, 0], "Booking.com": [9, 23957], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 1742], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [9, 23957], "X": [1, 1742], "share": 0.0, "total": 10}, {"name": "The Royal Manor", "Airbnb": [12, 92684], "Booking.com": [0, 0], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [12, 92684], "X": [0, 0], "share": 0.0, "total": 12}, {"name": "Mahogany Drive 7, Zimbali Estate", "Airbnb": [2, 48220], "Booking.com": [6, 84259], "direct": [2, 49887], "pangolincollection": [0, 0], "manual": [4, 66410], "Agent": [0, 0], "members": [1, 30550], "D": [2, 49887], "O": [8, 132479], "X": [5, 96960], "share": 20.0, "total": 15}, {"name": "Via Positano 95, Paulshof, JHB", "Airbnb": [10, 32888], "Booking.com": [2, 6171], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [3, 11389], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [12, 39059], "X": [3, 11389], "share": 0.0, "total": 15}, {"name": "Frantoio Flatlet at 13 Olives Estate", "Airbnb": [2, 4309], "Booking.com": [15, 30994], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [17, 35303], "X": [0, 0], "share": 0.0, "total": 17}, {"name": "Oceans Edge 23, Zimbali Estate", "Airbnb": [6, 91749], "Booking.com": [8, 167683], "direct": [1, 9784], "pangolincollection": [0, 0], "manual": [1, 29899], "Agent": [1, 17071], "members": [0, 0], "D": [1, 9784], "O": [14, 259431], "X": [2, 46971], "share": 6.7, "total": 17}, {"name": "Ocean Club C8, Zimbali Lakes", "Airbnb": [8, 19505], "Booking.com": [2, 5135], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 1525], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [10, 24641], "X": [1, 1525], "share": 0.0, "total": 11}, {"name": "Sandton Skye Lux Apartment 605", "Airbnb": [26, 54521], "Booking.com": [0, 0], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [3, 2810], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [26, 54521], "X": [3, 2810], "share": 0.0, "total": 29}, {"name": "Ocean Club D4, Zimbali Lakes", "Airbnb": [2, 8102], "Booking.com": [1, 1573], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [2, 4761], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [3, 9675], "X": [2, 4761], "share": 0.0, "total": 5}, {"name": "Ocean Club D2, Zimbali Lakes", "Airbnb": [0, 0], "Booking.com": [13, 43659], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [2, 3531], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [13, 43659], "X": [2, 3531], "share": 0.0, "total": 15}, {"name": "Ocean Club F25, Zimbali Lakes", "Airbnb": [17, 35846], "Booking.com": [1, 2367], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 2152], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [18, 38213], "X": [1, 2152], "share": 0.0, "total": 19}, {"name": "Nerina 311, Morningside", "Airbnb": [2, 8129], "Booking.com": [31, 62140], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 3172], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [33, 70269], "X": [1, 3172], "share": 0.0, "total": 34}, {"name": "Perna Perna 20, Umdloti", "Airbnb": [2, 21805], "Booking.com": [4, 24480], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [6, 46285], "X": [0, 0], "share": 0.0, "total": 6}, {"name": "Haus Mikaya, Cathkin Estates", "Airbnb": [5, 42112], "Booking.com": [7, 55674], "direct": [1, 8354], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [1, 8354], "O": [12, 97786], "X": [0, 0], "share": 7.7, "total": 13}, {"name": "Ocean Club A15, Zimbali Lakes", "Airbnb": [12, 41006], "Booking.com": [0, 0], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [2, 2460], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [12, 41006], "X": [2, 2460], "share": 0.0, "total": 14}, {"name": "Eland Way 4, Cathkin Estates", "Airbnb": [7, 49900], "Booking.com": [6, 46702], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [13, 96602], "X": [0, 0], "share": 0.0, "total": 13}, {"name": "Ocean Club A18, Zimbali Lakes", "Airbnb": [15, 41518], "Booking.com": [0, 0], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 3485], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [15, 41518], "X": [1, 3485], "share": 0.0, "total": 16}, {"name": "Oceans Edge 19, Zimbali Estate", "Airbnb": [8, 120497], "Booking.com": [9, 158141], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 4438], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [17, 278638], "X": [1, 4438], "share": 0.0, "total": 18}, {"name": "Oceans Edge 8, Zimbali Estate", "Airbnb": [12, 135656], "Booking.com": [2, 25313], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 28951], "Agent": [2, 44014], "members": [0, 0], "D": [0, 0], "O": [14, 160970], "X": [3, 72966], "share": 0.0, "total": 17}, {"name": "Milkwood Tranquil Beach Cottage", "Airbnb": [9, 27088], "Booking.com": [4, 46644], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [2, 17104], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [13, 73732], "X": [2, 17104], "share": 0.0, "total": 15}, {"name": "Oceans Edge 4, Zimbali Estate", "Airbnb": [2, 20219], "Booking.com": [11, 174319], "direct": [1, 10066], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [1, 10066], "O": [13, 194537], "X": [0, 0], "share": 7.1, "total": 14}, {"name": "Zebula Lodge 118", "Airbnb": [2, 16938], "Booking.com": [1, 9066], "direct": [1, 11890], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [1, 11890], "O": [3, 26004], "X": [0, 0], "share": 25.0, "total": 4}, {"name": "Fairways 3, Zimbali Estate", "Airbnb": [4, 35824], "Booking.com": [2, 24364], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 14788], "Agent": [2, 16999], "members": [0, 0], "D": [0, 0], "O": [6, 60189], "X": [3, 31786], "share": 0.0, "total": 9}, {"name": "Forestwood Drive 13, Zimbali Estate", "Airbnb": [2, 49595], "Booking.com": [2, 59134], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [2, 33871], "Agent": [3, 158954], "members": [1, 25156], "D": [0, 0], "O": [4, 108729], "X": [6, 217981], "share": 0.0, "total": 10}, {"name": "Baluwatu 10, Zimbali Estate", "Airbnb": [8, 90406], "Booking.com": [7, 111797], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [3, 18212], "Agent": [0, 0], "members": [1, 22809], "D": [0, 0], "O": [15, 202203], "X": [4, 41021], "share": 0.0, "total": 19}, {"name": "Camarque 47, Umdloti", "Airbnb": [12, 40473], "Booking.com": [12, 48683], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [24, 89155], "X": [0, 0], "share": 0.0, "total": 24}, {"name": "KwaMagogo Villa, Chartwell", "Airbnb": [14, 56171], "Booking.com": [2, 13143], "direct": [1, 5074], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [1, 5074], "O": [16, 69314], "X": [0, 0], "share": 5.9, "total": 17}, {"name": "Oceans Edge 3, Zimbali Estate", "Airbnb": [6, 87292], "Booking.com": [5, 80855], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [11, 168147], "X": [0, 0], "share": 0.0, "total": 11}, {"name": "Ocean Club F24, Zimbali Lakes", "Airbnb": [0, 0], "Booking.com": [15, 43831], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 2152], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [15, 43831], "X": [1, 2152], "share": 0.0, "total": 16}, {"name": "Zebula Bush Lodge 47", "Airbnb": [6, 67272], "Booking.com": [3, 38184], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [9, 105456], "X": [0, 0], "share": 0.0, "total": 9}, {"name": "Oceans Edge 13, Zimbali Estate", "Airbnb": [4, 40161], "Booking.com": [6, 129717], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [10, 169878], "X": [0, 0], "share": 0.0, "total": 10}, {"name": "Tiny Tides, Ocean Club C9", "Airbnb": [4, 18726], "Booking.com": [17, 40095], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [21, 58822], "X": [0, 0], "share": 0.0, "total": 21}, {"name": "Ocean Club B13, Zimbali Lakes", "Airbnb": [9, 28701], "Booking.com": [3, 8880], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [12, 37581], "X": [0, 0], "share": 0.0, "total": 12}, {"name": "Nyathi Hideaway", "Airbnb": [5, 16078], "Booking.com": [3, 10192], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [8, 26269], "X": [0, 0], "share": 0.0, "total": 8}, {"name": "Oceans Edge 21, Zimbali Estate", "Airbnb": [8, 97512], "Booking.com": [5, 105516], "direct": [2, 29428], "pangolincollection": [0, 0], "manual": [1, 16031], "Agent": [0, 0], "members": [0, 0], "D": [2, 29428], "O": [13, 203028], "X": [1, 16031], "share": 13.3, "total": 16}, {"name": "13 Olives, Somerset West", "Airbnb": [9, 92125], "Booking.com": [2, 82833], "direct": [1, 8354], "pangolincollection": [0, 0], "manual": [1, 4100], "Agent": [0, 0], "members": [0, 0], "D": [1, 8354], "O": [11, 174958], "X": [1, 4100], "share": 8.3, "total": 13}, {"name": "Licorna Beach 41, Umhlanga", "Airbnb": [1, 3976], "Booking.com": [8, 47490], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [2, 5012], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [9, 51466], "X": [2, 5012], "share": 0.0, "total": 11}, {"name": "Suite 501, Zimbali Suites", "Airbnb": [6, 23178], "Booking.com": [8, 43897], "direct": [2, 18146], "pangolincollection": [0, 0], "manual": [2, 10895], "Agent": [0, 0], "members": [0, 0], "D": [2, 18146], "O": [14, 67075], "X": [2, 10895], "share": 12.5, "total": 18}, {"name": "Aleah, Cathkin Estates", "Airbnb": [2, 23854], "Booking.com": [7, 49742], "direct": [0, 0], "pangolincollection": [1, 16502], "manual": [2, 7021], "Agent": [0, 0], "members": [0, 0], "D": [1, 16502], "O": [9, 73596], "X": [2, 7021], "share": 10.0, "total": 12}, {"name": "Wellstead, Cathkin Park", "Airbnb": [12, 105477], "Booking.com": [0, 0], "direct": [1, 7890], "pangolincollection": [0, 0], "manual": [1, 6150], "Agent": [0, 0], "members": [0, 0], "D": [1, 7890], "O": [12, 105477], "X": [1, 6150], "share": 7.7, "total": 14}, {"name": "25 Thulana Hill, Plettenberg Bay", "Airbnb": [3, 16154], "Booking.com": [2, 15467], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [5, 31621], "X": [0, 0], "share": 0.0, "total": 5}, {"name": "Aloe Corner, Cathkin Estates", "Airbnb": [10, 100741], "Booking.com": [4, 47863], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 48373], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [14, 148605], "X": [1, 48373], "share": 0.0, "total": 15}, {"name": "Dierama Dream, Cathkin Estates", "Airbnb": [9, 65925], "Booking.com": [7, 68158], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [1, 15775], "D": [0, 0], "O": [16, 134083], "X": [1, 15775], "share": 0.0, "total": 17}, {"name": "Surfside C207, Umdloti", "Airbnb": [2, 13128], "Booking.com": [4, 27187], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 2511], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [6, 40315], "X": [1, 2511], "share": 0.0, "total": 7}, {"name": "Waterberg House at Zebula (8 adults and 4 kids)", "Airbnb": [6, 80801], "Booking.com": [1, 9973], "direct": [2, 22396], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [2, 22396], "O": [7, 90774], "X": [0, 0], "share": 22.2, "total": 9}, {"name": "Elements Bush Villa 295", "Airbnb": [10, 72167], "Booking.com": [0, 0], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [2, 6289], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [10, 72167], "X": [2, 6289], "share": 0.0, "total": 12}, {"name": "Zimbali Hills 8, Zimbali Estate", "Airbnb": [4, 45299], "Booking.com": [5, 66857], "direct": [2, 57026], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [2, 57026], "O": [9, 112156], "X": [0, 0], "share": 18.2, "total": 11}, {"name": "Fourteen Tumbleweed, Cathkin Estates", "Airbnb": [9, 73685], "Booking.com": [10, 104298], "direct": [1, 19629], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [1, 19629], "O": [19, 177983], "X": [0, 0], "share": 5.0, "total": 20}, {"name": "Ocean Heights 18, Dolphin Coast", "Airbnb": [1, 6350], "Booking.com": [5, 30604], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [6, 36954], "X": [0, 0], "share": 0.0, "total": 6}, {"name": "Kauai Villa 23, Zimbali Estate", "Airbnb": [4, 44472], "Booking.com": [2, 28503], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 14663], "Agent": [1, 8089], "members": [0, 0], "D": [0, 0], "O": [6, 72974], "X": [2, 22751], "share": 0.0, "total": 8}, {"name": "Phezulu Villas 2, Zimbali Estate", "Airbnb": [2, 39681], "Booking.com": [6, 96788], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [1, 21918], "members": [0, 0], "D": [0, 0], "O": [8, 136468], "X": [1, 21918], "share": 0.0, "total": 9}, {"name": "848 @ Highland Gate", "Airbnb": [1, 8649], "Booking.com": [3, 34563], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [4, 43212], "X": [0, 0], "share": 0.0, "total": 4}, {"name": "Ocean Club A2, Zimbali Lakes", "Airbnb": [10, 24687], "Booking.com": [7, 22447], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [17, 47134], "X": [0, 0], "share": 0.0, "total": 17}, {"name": "Tranquillity @ 158 Champagne Ridge, Cathkin Estates", "Airbnb": [14, 117757], "Booking.com": [1, 6109], "direct": [1, 6816], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [1, 6816], "O": [15, 123867], "X": [0, 0], "share": 6.2, "total": 16}, {"name": "Main House at Zebula 82", "Airbnb": [7, 41333], "Booking.com": [2, 14973], "direct": [1, 9738], "pangolincollection": [0, 0], "manual": [2, 21704], "Agent": [0, 0], "members": [0, 0], "D": [1, 9738], "O": [9, 56306], "X": [2, 21704], "share": 10.0, "total": 12}, {"name": "Suite 108, Zimbali Suites", "Airbnb": [2, 19317], "Booking.com": [16, 177515], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 8328], "Agent": [1, 3989], "members": [0, 0], "D": [0, 0], "O": [18, 196832], "X": [2, 12317], "share": 0.0, "total": 20}, {"name": "Ocean Club F27, Zimbali Lakes", "Airbnb": [1, 1924], "Booking.com": [6, 23095], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [7, 25019], "X": [0, 0], "share": 0.0, "total": 7}, {"name": "Serenity, Cathkin Estates", "Airbnb": [4, 31222], "Booking.com": [1, 7807], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 8764], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [5, 39029], "X": [1, 8764], "share": 0.0, "total": 6}, {"name": "Sylvan Close 3, Umhlanga Rocks", "Airbnb": [2, 52235], "Booking.com": [2, 30592], "direct": [2, 33695], "pangolincollection": [0, 0], "manual": [1, 47927], "Agent": [1, 32155], "members": [0, 0], "D": [2, 33695], "O": [4, 82827], "X": [2, 80082], "share": 33.3, "total": 8}, {"name": "Chalet at Zebula 82", "Airbnb": [4, 27247], "Booking.com": [14, 81830], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 2255], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [18, 109077], "X": [1, 2255], "share": 0.0, "total": 19}, {"name": "La Ballito 506, Dolphin Coast", "Airbnb": [2, 6307], "Booking.com": [6, 17348], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [8, 23655], "X": [0, 0], "share": 0.0, "total": 8}, {"name": "Elements Bush Villa 18", "Airbnb": [9, 88634], "Booking.com": [1, 7312], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [10, 95946], "X": [0, 0], "share": 0.0, "total": 10}, {"name": "Ocean Club G22, Zimbali Lakes", "Airbnb": [6, 13875], "Booking.com": [5, 19587], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [2, 6355], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [11, 33463], "X": [2, 6355], "share": 0.0, "total": 13}, {"name": "Elements Bush Villa 216", "Airbnb": [1, 5991], "Booking.com": [5, 67360], "direct": [3, 2050], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [3, 2050], "O": [6, 73351], "X": [0, 0], "share": 33.3, "total": 9}, {"name": "Oceans Edge 17, Zimbali Estate", "Airbnb": [5, 63797], "Booking.com": [6, 92264], "direct": [1, 11931], "pangolincollection": [0, 0], "manual": [1, 10901], "Agent": [1, 22345], "members": [0, 0], "D": [1, 11931], "O": [11, 156061], "X": [2, 33246], "share": 8.3, "total": 14}, {"name": "Baluwatu 8, Zimbali Estate", "Airbnb": [3, 42212], "Booking.com": [5, 69775], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [1, 13643], "members": [0, 0], "D": [0, 0], "O": [8, 111987], "X": [1, 13643], "share": 0.0, "total": 9}, {"name": "Oceans Edge 12, Zimbali Estate", "Airbnb": [15, 281393], "Booking.com": [0, 0], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [15, 281393], "X": [0, 0], "share": 0.0, "total": 15}, {"name": "11 On Fairway Villa, Southbroom", "Airbnb": [0, 0], "Booking.com": [2, 32583], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 61110], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [2, 32583], "X": [1, 61110], "share": 0.0, "total": 3}, {"name": "Birdsong Villa Langebaan", "Airbnb": [4, 24537], "Booking.com": [0, 0], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [4, 24537], "X": [0, 0], "share": 0.0, "total": 4}, {"name": "Luxury Penthouse In The Heart Of Sandton", "Airbnb": [6, 74383], "Booking.com": [7, 111187], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 2768], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [13, 185570], "X": [1, 2768], "share": 0.0, "total": 14}, {"name": "Fairways 5, Zimbali Estate", "Airbnb": [4, 28295], "Booking.com": [4, 29034], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [8, 57329], "X": [0, 0], "share": 0.0, "total": 8}, {"name": "Marina Bay 802, Umhlanga", "Airbnb": [0, 0], "Booking.com": [8, 41574], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [8, 41574], "X": [0, 0], "share": 0.0, "total": 8}, {"name": "Villa Med 5, Dolphin Coast", "Airbnb": [3, 18368], "Booking.com": [3, 24041], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [6, 42409], "X": [0, 0], "share": 0.0, "total": 6}, {"name": "Thabela House, Kensington", "Airbnb": [3, 14186], "Booking.com": [2, 8496], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [5, 22682], "X": [0, 0], "share": 0.0, "total": 5}, {"name": "Silhouette 3, Margate", "Airbnb": [1, 4615], "Booking.com": [1, 2196], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [2, 6811], "X": [0, 0], "share": 0.0, "total": 2}, {"name": "Sheffield Shores 105, Sheffield Beach", "Airbnb": [4, 120780], "Booking.com": [2, 72754], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [2, 49625], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [6, 193535], "X": [2, 49625], "share": 0.0, "total": 8}, {"name": "Disa Close 3, Cathkin Estates", "Airbnb": [0, 0], "Booking.com": [6, 38844], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [6, 38844], "X": [0, 0], "share": 0.0, "total": 6}, {"name": "Eden Wilds 19, Rennies Beach, Port Edward", "Airbnb": [0, 0], "Booking.com": [11, 38814], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 2475], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [11, 38814], "X": [1, 2475], "share": 0.0, "total": 12}, {"name": "Riverside Rhapsody, Vaal River", "Airbnb": [0, 0], "Booking.com": [4, 57497], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [4, 57497], "X": [0, 0], "share": 0.0, "total": 4}, {"name": "Corals 4, Zimbali Estate", "Airbnb": [6, 85685], "Booking.com": [2, 56479], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [8, 142164], "X": [0, 0], "share": 0.0, "total": 8}, {"name": "Ihlati 3, Zimbali Estate", "Airbnb": [4, 103277], "Booking.com": [0, 0], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 5638], "Agent": [1, 14007], "members": [0, 0], "D": [0, 0], "O": [4, 103277], "X": [2, 19644], "share": 0.0, "total": 6}, {"name": "Bona Bali 14, Zimbali Estate", "Airbnb": [4, 56850], "Booking.com": [1, 8570], "direct": [1, 6127], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [1, 6127], "O": [5, 65421], "X": [0, 0], "share": 16.7, "total": 6}, {"name": "Zebula Bush Lodge 127", "Airbnb": [1, 10567], "Booking.com": [0, 0], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [1, 10567], "X": [0, 0], "share": 0.0, "total": 1}, {"name": "La Palma 10A Diaz Beach", "Airbnb": [3, 36608], "Booking.com": [2, 62710], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [5, 99318], "X": [0, 0], "share": 0.0, "total": 5}, {"name": "La Ballito 604, Dolphin Coast", "Airbnb": [1, 5086], "Booking.com": [4, 12282], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [1, 5228], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [5, 17368], "X": [1, 5228], "share": 0.0, "total": 6}, {"name": "Thaba Lodge, Black Rhino, Pilanesberg", "Airbnb": [0, 0], "Booking.com": [2, 128086], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [2, 128086], "X": [0, 0], "share": 0.0, "total": 2}, {"name": "Cathkin Haven,  Cathkin Estates", "Airbnb": [0, 0], "Booking.com": [2, 26802], "direct": [1, 8610], "pangolincollection": [0, 0], "manual": [1, 0], "Agent": [0, 0], "members": [0, 0], "D": [1, 8610], "O": [2, 26802], "X": [1, 0], "share": 33.3, "total": 4}, {"name": "Doornkop Fish & Wildlife Reserve Unit 90", "Airbnb": [0, 0], "Booking.com": [1, 6865], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [1, 6865], "X": [0, 0], "share": 0.0, "total": 1}, {"name": "Ocean Club G20, Zimbali Lakes", "Airbnb": [1, 3703], "Booking.com": [2, 5454], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [3, 9157], "X": [0, 0], "share": 0.0, "total": 3}, {"name": "Marina Bay 504, Umhlanga", "Airbnb": [3, 11138], "Booking.com": [5, 43606], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [8, 54744], "X": [0, 0], "share": 0.0, "total": 8}, {"name": "Begha 180\u00b0 Beach House", "Airbnb": [1, 2343], "Booking.com": [0, 0], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [1, 2343], "X": [0, 0], "share": 0.0, "total": 1}, {"name": "Driftwood 5, Zimbali Estate", "Airbnb": [1, 27072], "Booking.com": [1, 54314], "direct": [0, 0], "pangolincollection": [0, 0], "manual": [0, 0], "Agent": [0, 0], "members": [0, 0], "D": [0, 0], "O": [2, 81385], "X": [0, 0], "share": 0.0, "total": 2}];
+
+function fmt(n){return n.toLocaleString('en-US');}
+function shareClass(s){ if(s===null) return ''; if(s===0) return 'p0'; if(s<15) return 'plow'; return 'pok';}
+function shareTxt(s){ return s===null ? '\u2014' : s+'%';}
+
+// build flat rows
+const rows = DATA.map(r=>({
+  name:r.name, share:r.share,
+  dc:r.D[0], dr:r.D[1], oc:r.O[0], or:r.O[1],
+  ab:r.Airbnb[0], bdc:r['Booking.com'][0],
+  xc:r.X[0], total:r.total
+}));
+
+// ---- worst tables ----
+function worstVol(){
+  return rows.filter(r=>r.dc===0).sort((a,b)=>b.oc-a.oc||b.or-a.or).slice(0,15);
+}
+function worstRev(){
+  return rows.filter(r=>r.dc===0).sort((a,b)=>b.or-a.or||b.oc-a.oc).slice(0,15);
+}
+function fillMini(id, list, cols){
+  const tb=document.querySelector('#'+id+' tbody'); tb.innerHTML='';
+  list.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    let c='<td class="prop"><span class="rank">'+(i+1)+'</span>'+r.name+'</td>';
+    cols.forEach(k=>{ c+= k==='or' ? '<td class="num otan">R'+fmt(r.or)+'</td>' : '<td class="num otan">'+r[k]+'</td>'; });
+    tr.innerHTML=c; tb.appendChild(tr);
+  });
+}
+fillMini('volTbl', worstVol(), ['oc','or']);
+fillMini('revTbl', worstRev(), ['or','oc']);
+
+// ---- main table ----
+let sortK='oc', sortDir=-1;  // default: most OTA bookings first surfaces the battle
+function render(){
+  const q=document.getElementById('search').value.toLowerCase();
+  let list=rows.filter(r=>r.name.toLowerCase().includes(q));
+  list.sort((a,b)=>{
+    let av=a[sortK], bv=b[sortK];
+    if(sortK==='share'){ av=av===null?-1:av; bv=bv===null?-1:bv; }
+    if(typeof av==='string') return sortDir*av.localeCompare(bv);
+    return sortDir*(av-bv);
+  });
+  const tb=document.querySelector('#mainTbl tbody'); tb.innerHTML='';
+  list.forEach(r=>{
+    const tr=document.createElement('tr'); if(r.dc===0) tr.className='zero';
+    tr.innerHTML =
+      '<td class="prop">'+r.name+'</td>'+
+      '<td><span class="pill '+shareClass(r.share)+'">'+shareTxt(r.share)+'</span></td>'+
+      '<td class="num dirn">'+r.dc+'</td>'+
+      '<td class="num dirn">R'+fmt(r.dr)+'</td>'+
+      '<td class="num otan">'+r.oc+'</td>'+
+      '<td class="num otan">R'+fmt(r.or)+'</td>'+
+      '<td class="num">'+r.ab+'</td>'+
+      '<td class="num">'+r.bdc+'</td>'+
+      '<td class="num othn">'+r.xc+'</td>'+
+      '<td class="num">'+r.total+'</td>';
+    tb.appendChild(tr);
+  });
+  document.querySelectorAll('#mainTbl thead th').forEach(th=>{
+    th.className = th.dataset.k===sortK ? (sortDir===1?'s-asc':'s-desc') : '';
+  });
+}
+document.querySelectorAll('#mainTbl thead th').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const k=th.dataset.k;
+    if(k===sortK) sortDir*=-1; else {sortK=k; sortDir = k==='name'?1:-1;}
+    render();
+  });
+});
+document.getElementById('search').addEventListener('input',render);
+render();
+
+// ---- copy for sheets ----
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
+function tsv(list){
+  const head=['Property','Direct%','DIR #','DIR rev','OTA #','OTA rev','Airbnb','Booking.com','manual+Agent+members #','Total'];
+  const lines=[head.join('\t')];
+  list.forEach(r=>lines.push([r.name, r.share===null?'':r.share, r.dc, r.dr, r.oc, r.or, r.ab, r.bdc, r.xc, r.total].join('\t')));
+  return lines.join('\n');
+}
+function copyTSV(){
+  const q=document.getElementById('search').value.toLowerCase();
+  let list=rows.filter(r=>r.name.toLowerCase().includes(q)).sort((a,b)=>b.oc-a.oc);
+  navigator.clipboard.writeText(tsv(list)).then(()=>toast('Copied '+list.length+' rows \u2014 paste into Sheets'));
+}
+function copyZero(){
+  let list=rows.filter(r=>r.dc===0).sort((a,b)=>b.oc-a.oc);
+  navigator.clipboard.writeText(tsv(list)).then(()=>toast('Copied '+list.length+' zero-direct rows'));
+}
+</script>
+</body>
+</html>
